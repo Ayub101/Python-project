@@ -289,7 +289,7 @@ class product():
     def __init__(self,master,lis):
 
         self.btm = Frame(master)
-        #fnt=["Arial 10 bold", "Arial 13 bold", "Arial 10 "]
+        fnt=["Arial 10 bold", "Arial 13 bold", "Arial 10 "]
         #==========================================================================================#
 
         try:
@@ -300,9 +300,10 @@ class product():
             if "NOT" in lis:
                 # after error clear lia
                 raise TypeError()
-                l = []
+                
             #-------------------------------------------------#
             #for making object of % frames
+            l = []
             for i in range(0, 5):
                 self.la = Frame(self.btm, bg="#131d20")
                 l.append(self.la)
