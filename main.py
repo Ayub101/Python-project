@@ -264,19 +264,33 @@ class optionbar():
         #making search button
         self.b = Button(self.downframe, text="search",relief="groove", command=lambda: [lis_of_link.clear(),call(str(self.ent.get()))],bd=3
                         ,activebackground="yellow",font=("Arial",10,"bold"))
+        # binding Enter key with search button button
+        t.bind('<Return>', lambda event=None:[self.b.invoke()])
+
         #---------------------------------------------------------------------------------#
         #making forward and back button
         self.back = Button(self.downframe, text=" < ",relief="groove"
                             ,command=lambda: [for_back("back",str(self.ent.get()),self)],bd=3
                            ,activebackground="yellow",font=("Arial",10,"bold"))
+        
+        #binding ctrl+b key with back button
+        t.bind("<Control-Key-b>", lambda event=None: [for_back("back",str(self.ent.get().replace("b","")),self)])
+
         self.frwd = Button(self.downframe, text=" > ",relief="groove"
                             ,command=lambda: [for_back("forward",str(self.ent.get()),self)],bd=3,activebackground="yellow",font=("Arial",10,"bold"))
 
-        #making home button
+        #binding ctrl+f key with forward button
+        t.bind("<Control-Key-f>", lambda event=None: [for_back("forward",str(self.ent.get()).replace("f",""),self)]
+        
+               #making home button
         try:
             self.home = Button(self.downframe, text="Home",relief="groove", command=lambda: [dt.btm.destroy(),self.putinSearch(""),freeup()],bd=3
                         ,activebackground="yellow",font=("Arial",10,"bold"))
-        except AttributeError:
+            
+            #binding home key with home button
+            t.bind("<Home>",lambda event=None: [dt.btm.destroy(),self.putinSearch(""),freeup()])
+        
+         except AttributeError:
             print(" ")
         #making a voice search button
         mic=Image.open("mic.png")
@@ -388,6 +402,9 @@ class product():
             self.FrameWidth()
             #to set the size of canvas wrt btm frame
             self.btm.bind("<Configure>", self.OnFrameConfigure)
+            # to bind MouseWhell for scrolling canvas
+            t.bind("<MouseWheel>",self._on_mousewheel)
+
 
 
         except BaseException as e:
@@ -426,6 +443,11 @@ class product():
 #function to change size of canvas wrt to btm frame
     def OnFrameConfigure(self, event):
         canvas.configure(scrollregion=canvas.bbox("all"))
+              
+#function to add event listener of mouse wheel on canvas to scroll canvas
+    def _on_mousewheel(self, event):
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
