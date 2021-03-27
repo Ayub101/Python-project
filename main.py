@@ -1,42 +1,47 @@
 from tkinter import *
-from tkinter import ttk
 from PIL import Image,ImageTk
+from PIL import ImageEnhance
 import webScarpper as wb
 import webbrowser as google
 import traceback
 import os
 import voice_search as vs
-import time as tm
-
-
+import cv2 as cv
+import shutil as sh
 
 #--------------------------global function----------------------------------#
 
 #global list to store all searches
 lis_of_sear = []
+
 #global list to store all the links of website
 lis_of_link = []
+
+#global list to hold wish list product later we will use sql
+lis_of_wish = []
+
 #global variable of none type
 dt = None
+
 # call func for main result frame of searches
 def call(name):
     lis_of_sear.append(name)
     global dt
     if dt is not None:
+       
         #destroy previous search
         dt.detr()
+    
     # take result list from getlis and call search result frame
     dt = product(t, getlis(name))
+
 # use to visit website
 # call by visit site button
-
 def visit_link(i):
+    
     #open the website in default Browser
     google.open_new(lis_of_link[i])
-    print(lis_of_link)
-    print(i)
-    #increament i value
-    # restart i button with 0 in list ends
+
 #deleting all images
 def freeup():
     for i in range(0,7):
@@ -44,6 +49,7 @@ def freeup():
             os.remove(str(i)+".jpg")
         except:
             break
+
 #make Dynamic Button
 def mkButton(p,frame):
     return Button(frame, text="Visit site",font=("times new roman ",8,"bold")
@@ -51,45 +57,57 @@ def mkButton(p,frame):
 
 #get list of the product
 def getlis(na):
+   
    try:
        #making object of web scraping
         wa = wb.webScrapper()
         try:
+            
             #delete the image from directory
             wa.delete()
+        
         except:
             print(" ")
+        
         link = wa.get(na)
         lis = wa.scrapgog(link["Google"])
         wa.download()
+        
         if type(lis)==None:
             raise EXCEPTION("NOT THERE")
         return lis
+   
    except ConnectionResetError as c:
        return "NOT CONNECTED"
 
    except :
        return "NOT FOUND"
 
+# function for forward or backward search
 def for_back(command,name,obj):
 
     global dt
     global back_count
     global forward_count
+    
     if command == "back" and dt is not None:
         if (lis_of_sear.index(name)-1) < 0:
             return
         dt.detr()
         try:
             pr = lis_of_sear[lis_of_sear.index(name)-1]
+       
         except :
             pr = lis_of_sear[0]
 
         obj.putinSearch(pr)
+        
         try:
             dt = product(t,getlis(pr))
+        
         finally:
             return
+    
     if command == "forward" and dt is not None:
         if (lis_of_sear.index(name)+1) >= len(lis_of_sear):
             return
@@ -97,33 +115,44 @@ def for_back(command,name,obj):
         pr = lis_of_sear[lis_of_sear.index(name)+1]
         obj.putinSearch(pr)
         try:
+            
             dt = product(t, getlis(pr))
         finally:
             return
     return
-def imagebutton(frame,p):
-    return Button(frame,command=lambda :[show(p)])
 
-#currently working on it
-def show(ig):
+#making image button
+def imagebutton(frame,i):
+    return Button(frame,command=lambda :[show(i)])
+
+#showing image in pop up window
+def show(i):
     #print(.jpg")
-    img = Image.open("back.png")
-    img = img.resize((300,190),Image.ANTIALIAS)
-    img=ImageTk.PhotoImage(img)
-    im=Tk()
-    im.title("Image")
-    im.geometry("152x200")
-    can = Canvas(im, width=152,height=200,bg="red")
-    #labe =Label(im,image=ig)
-    #labe.image=ig
-    #labe.pack()
-    can.create_image(0,0,image=img,anchor="nw")
-    can.pack()
+    #image = Image.open(str(i)+".jpg")
+    #cimg = cv.CreateImageHeader(image.size, cv.IPL_DEPTH_8U, 3)  # CV Image
+    img = cv.imread(str(i)+".jpg",1)
+    res = cv.resize(img, (170, 250))
+    #dst = cv.edgePreservingFilter(res, flags=1, sigma_s=60, sigma_r=0.4)
+    dst = cv.detailEnhance(res, sigma_s=10, sigma_r=0.1)
+    cv.namedWindow("Image")
+    cv.moveWindow("Image",120,150)
+    cv.imshow("Image",dst)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
 #voice function return take the search from microphone
 def voice():
     v = vs.voice_search()
     return v.asist()
+
+#to make wishlist window vivible
+def wish():
+    try:
+        dt.detr()
+        wi = wishlist()
+    except:
+        print("")
+
 #------------------------------------class of frames--------------------------#
 
 
@@ -141,33 +170,19 @@ class header():
         # giving background black color
         t.configure(bg="#000000")
         #giving size to tk window
-        t.geometry("990x550")
+        t.geometry("990x550+10+70")
 
-#previous code
-
-        #top = Frame(t,relief="groove",bd=3)
-        #top.config(bg="#2b0092")
-        #lab = Label(top, image=bg,relief="groove")
-        #lab.pack(side=LEFT,fill="y")
-        #name = Label(top,text="SKARS Smart Shopping",font="Arial 38 bold")
-        #cname.config(bg="#2b0092",foreground="#ffc770")
-        #name.pack(side=LEFT,fill="x",padx=20)
-        #top.pack(side=TOP,fill="x")
-
-        #calling login frame
         self.login(t,bg)
 
+#making login page
     def login(self,t,bg):
-        #making a parent frame in which mess and login frame will be pack
-                # Creating a message Frame
-        #messfr = Frame(bframe,bd=5,bg="#d48352")
-        #save = Label(messfr,text="We help you to save money",font="Arial 30 bold",relief="groove",bd=3,bg="#56b6d8")
-        #save.pack()
-
+        
         # using global variable canvas in method
         global canvas
+        
         # creating a login Frame
         bframe = Frame(t, relief="groove", bd=3)
+        
         # resizing image use in button
         #--------------------------------------------------------------------#
         goog = Image.open("googlebut1.jpg")
@@ -177,12 +192,14 @@ class header():
         log = log.resize((250, 50), Image.ANTIALIAS)
         log = ImageTk.PhotoImage(log)
         #--------------------------------------------------------------------#
-        loginfr = Frame(bframe,bg="#e7f7d0",bd=0)
+        
+        loginfr = Frame(bframe,bg="White",bd=0)
         head = Label(loginfr,text="LOGIN",font="Arial 20 bold",bg="#e7f7d0")
         email = Label(loginfr,text="LOGIN ID:",font="Arial 12 bold",bg="#e7f7d0")
         emid = Entry(loginfr, width=30,bg="#e7f7d0",relief="groove",font="Arial 12 ",bd=2,justify=LEFT)
         paswd = Label(loginfr, text="PASSWORD:",font="Arial 12 bold",bg="#e7f7d0",bd=2)
         password = Entry(loginfr, width=30,bg="#e7f7d0",font="Arial 12 bold",relief="groove",bd=2,show="*")
+        
         #using image as button
         logbtn = Button(loginfr,image=log,bd=0
                        ,command=lambda:[bframe.destroy(),self.enter(t)])
@@ -190,6 +207,7 @@ class header():
         createbtn = Button(loginfr, image=goog,bd=0
                          ,command=lambda: [bframe.destroy(),self.enter(t)])
         createbtn.image=goog # -> anchor to image
+        
         # an Empty label to create space or to skip a line using pack
         space = Label(loginfr,text="")
 
@@ -202,11 +220,10 @@ class header():
         logbtn.grid(row=6,column=2,columnspan=3,pady=5)
         createbtn.grid(row=7,column=2,columnspan=3,pady=5)
 
-        #messfr.pack(side=TOP,fill="x")
         loginfr.pack(fill="y")
+        
         #adding bframe  in canvas
         canvas.create_window(150,120, anchor="nw", window=bframe)
-        #bframe.pack(fill=BOTH)
 
     def enter(self,t):
         # login Button will call this and destroy ist frame
@@ -232,16 +249,21 @@ class optionbar():
         #resizing iamge use in background
         second = Image.open("high.jpg")
         second = second.resize((990,550),Image.ANTIALIAS)
+        second= ImageEnhance.Sharpness(second)
+        second = second.enhance(7.0)
         second = ImageTk.PhotoImage(second)
+        
         #making background
         canvas = Canvas(parent, width=992, height=700,scrollregion=(0,0,1000,1000),bg="#131d20")
         canvas.image = second
         canvas.create_image(0, 0, image=second, anchor="nw")
+        
         #making scrollbar
-        scroll = Scrollbar(parent, command=canvas.yview)
+        self.scroll = Scrollbar(parent, command=canvas.yview)
+        
         #adding it to canvas
-        canvas.config(yscrollcommand=scroll.set)
-        scroll.pack(fill="y",side=RIGHT)
+        canvas.config(yscrollcommand=self.scroll.set)
+        self.scroll.pack(fill="y",side=RIGHT)
         canvas.pack(fill=BOTH, expand=True)
 
         #-----------------------------------------------------#
@@ -250,6 +272,7 @@ class optionbar():
         self.search = Frame(canvas,bd=0)
         self.upframwe = Frame(self.search,bg="#dabf00")
         self.downframe = Frame(self.search,bg="#dabf00")
+        
         # search.config(bg="#e4d2fc", bd=5)
         self.search.config(bg="#dabf00", bd=3)
         imag= Image.open("smart.png")
@@ -260,11 +283,13 @@ class optionbar():
         icon.grid(row=0,column=0,rowspan=2)
 
         #makind Serachbox
-        self.ent = Entry(self.downframe, width=70,relief=GROOVE,bd=3 ,font=("times new roman ",12,"bold"))
+        self.ent = Entry(self.downframe, width=70,state=NORMAL,relief=GROOVE,bd=3 ,font=("times new roman ",12,"bold"))
+
         #making search button
         self.b = Button(self.downframe, text="search",relief="groove", command=lambda: [lis_of_link.clear(),call(str(self.ent.get()))],bd=3
                         ,activebackground="yellow",font=("Arial",10,"bold"))
-        # binding Enter key with search button button
+        
+        # binding Enter key with search  button
         t.bind('<Return>', lambda event=None:[self.b.invoke()])
 
         #---------------------------------------------------------------------------------#
@@ -272,31 +297,33 @@ class optionbar():
         self.back = Button(self.downframe, text=" < ",relief="groove"
                             ,command=lambda: [for_back("back",str(self.ent.get()),self)],bd=3
                            ,activebackground="yellow",font=("Arial",10,"bold"))
-        
+
         #binding ctrl+b key with back button
         t.bind("<Control-Key-b>", lambda event=None: [for_back("back",str(self.ent.get().replace("b","")),self)])
 
+        #making forward button
         self.frwd = Button(self.downframe, text=" > ",relief="groove"
                             ,command=lambda: [for_back("forward",str(self.ent.get()),self)],bd=3,activebackground="yellow",font=("Arial",10,"bold"))
 
         #binding ctrl+f key with forward button
-        t.bind("<Control-Key-f>", lambda event=None: [for_back("forward",str(self.ent.get()).replace("f",""),self)]
-        
-               #making home button
+        t.bind("<Control-Key-f>", lambda event=None: [for_back("forward",str(self.ent.get()).replace("f",""),self)])
+
+        #making home button
         try:
             self.home = Button(self.downframe, text="Home",relief="groove", command=lambda: [dt.btm.destroy(),self.putinSearch(""),freeup()],bd=3
                         ,activebackground="yellow",font=("Arial",10,"bold"))
-            
+
             #binding home key with home button
             t.bind("<Home>",lambda event=None: [dt.btm.destroy(),self.putinSearch(""),freeup()])
-        
-         except AttributeError:
+        except:
             print(" ")
+        
         #making a voice search button
         mic=Image.open("mic.png")
         mic= mic.resize((20,20),Image.ANTIALIAS)
         mic=ImageTk.PhotoImage(mic)
-        self.speech = Button(self.downframe,image=mic,bg="white",bd=0,command=lambda:[lis_of_link.clear(),self.micsearch()])
+        self.speech = Button(self.downframe,image=mic,bg="white",bd=0
+                             ,command=lambda:[lis_of_link.clear(), self.putinSearch("Listening....."),self.micsearch()])
         self.speech.image=mic
         # ----------------------------------------------------------------------------------#
 
@@ -307,13 +334,14 @@ class optionbar():
         self.ent.pack(side=LEFT, padx=3)
         self.speech.pack(side=LEFT, padx=2)
         self.b.pack(side=LEFT,padx=3)
-
-        #self.search.pack(side=TOP, fill="x")
-        self.upframwe.grid(row=1,column=2)
+        self.wish=Button(self.upframwe,text="wishlist",activebackground="yellow",font=("Arial",10,"bold")
+                         ,relief=GROOVE,bd=2,command=lambda :[self.scroll.pack_forget(),wish()])
+        self.wish.pack(side=LEFT)
+        self.upframwe.grid(row=1,column=2,sticky="nw")
         self.downframe.grid(row=0,column=2,sticky="nw",padx=5)
 
         #adding searchbar to canvas
-        self.search_frame = canvas.create_window(3,5, anchor="nw", window=self.search)
+        self.search_frame = canvas.create_window(3,3, anchor="nw", window=self.search)
 
         #making right side menu bar   currently not used
         rside = Frame(canvas,relief=GROOVE)
@@ -324,8 +352,6 @@ class optionbar():
         b3.pack(fill="x", padx=2, pady=3)
         b2.pack(fill="x", padx=2, pady=3)
         b1.pack(fill="x", padx=2, pady=3)
-        #canvas.create_window(40,50, anchor="nw", window=rside)
-        #rside.pack(side=LEFT, fill="y")
 
 #putinsearch method put the text of button in right side panel in search bar
     def putinSearch(self,txt):
@@ -335,20 +361,22 @@ class optionbar():
 #find the voice search
     def micsearch(self):
         pro = voice()
-        call(pro)
         self.putinSearch(pro)
+        call(pro)
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 
                                #product class=make frame of all product present on website
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+
 # product class makes the frame of searches on window
 class product():
     def __init__(self,master,lis):
-
+        self.name_lis = []
         self.btm = Frame(canvas,width=550)
         fnt=["Arial 10 bold", "Arial 13 bold", "Arial 10 "]
+        self.lis=lis
 
         #==========================================================================================#
 
@@ -357,7 +385,7 @@ class product():
             #se=["#bab2de","#a0d0c4","#aca25a","#baacbc","#dad3d9","#a0d0c4"]
 
             # if not in the lis then it will raise type error
-            if "NOT" in lis:
+            if "NOT" in self.lis:
                 # after error clear lia
                 raise TypeError()
             #-------------------------------------------------#
@@ -366,7 +394,7 @@ class product():
             for i in range(0, 7):
                 self.la = Frame(self.btm, bg="#131d20")
                 l.append(self.la)
-                lis_of_link.append(lis[i]["link"])
+                lis_of_link.append(self.lis[i]["link"])
                 i += 1
             #--------------------------------------------------#
 
@@ -375,14 +403,14 @@ class product():
 
             #==================================================================================#
             for p in range(0, 7):
-                self.lab = imagebutton(l[p],img[p])
+                self.lab = imagebutton(l[p],p)
                 self.lab.image = img[p]  # this is anchor image object to label
                 self.lab.config(image=img[p])
-                self.lanam = Label(l[p],text=lis[p].get("name"),fg="white",wraplength=600, bg='#131d20',font=fnt[0])
-                self.laprice = Label(l[p],text=lis[p].get("price"),fg="white", bg='#131d20',font=fnt[1])
-                self.laadd = Label(l[p], text=lis[p].get("address"),fg="white", bg='#131d20',font=fnt[2])
+                self.lanam = Label(l[p],text=self.lis[p].get("name"),fg="white",wraplength=600, bg='#131d20',font=fnt[0])
+                self.laprice = Label(l[p],text=self.lis[p].get("price"),fg="white", bg='#131d20',font=fnt[1])
+                self.laadd = Label(l[p], text=self.lis[p].get("address"),fg="white", bg='#131d20',font=fnt[2])
                 self.btframe = Frame(self.btm,bg='#131d20')
-                self.wish = Button(self.btframe, text="+ Wishlist",font=("times new roman ",8,"bold"),activebackground="yellow",command=lambda:[print(p)])
+                self.wish =  self.wsbutton(p)
                 self.visit = mkButton(p,self.btframe)
                 self.lab.grid(row=0, column=0, sticky="ns", rowspan=2)
                 self.lanam.grid(row=0, column=1)
@@ -393,30 +421,30 @@ class product():
                 l[p].pack(side=TOP, fill="x", pady=1)
                 self.btframe.pack(fill="x")
                 p += 1
-            #self.btm.place(x=50,y=100,relwidth=0.9)
+
             #create a window
-            self.can_frame =canvas.create_window(10,70, anchor="nw", window=self.btm,tags="self.btm")
-            #canvas.itemconfig("self.btm",hieght=500,width=900)
-            #canvas.bind('<Configure>', self.FrameWidth)
+            self.can_frame = canvas.create_window(10,70, anchor="nw", window=self.btm,tags="self.btm")
+
             #to expand btm frame on canvas
             self.FrameWidth()
+
             #to set the size of canvas wrt btm frame
             self.btm.bind("<Configure>", self.OnFrameConfigure)
-            # to bind MouseWhell for scrolling canvas
+
+            # to bind mouse wheel on ui for scroll from any where
             t.bind("<MouseWheel>",self._on_mousewheel)
 
-
-
         except BaseException as e:
-            if "NOT" not in lis:
-                lis = "ERROR"
+            if "NOT" not in self.lis:
+                self.lis = "ERROR"
+                #to print the error message on console
                 print(e)
                 print(traceback.format_exc())
-            self.la = Label(self.btm,text=lis,font="Arial 22 bold")
+            self.la = Label(self.btm,text=self.lis,font="Arial 22 bold")
             self.la['background']='#856ff8'
             self.la.pack(fill="x")
-            #self.btm.pack(fill="x")
-            canvas.create_window(50, 70, anchor="nw", window=self.btm)
+            self.can_frame = canvas.create_window(10, 70, anchor="nw", window=self.btm)
+            self.FrameWidth()
 
         #===============================================================================================#
 
@@ -424,58 +452,185 @@ class product():
     def detr(self):
         self.btm.destroy()
 
-#put product in wish list
-    def fin(self,wi):
-        print(wi)
-
 #making object of image
-    def image(self):
+    def image(self,n=7):
         img=[]
-        for i in range(0,7):
-            im = Image.open( str(i)+".jpg")
+        for i in range(0,n):
+            im = Image.open(str(i)+".jpg")
             im = im.resize((70,65), Image.ANTIALIAS)
             im = ImageTk.PhotoImage(im)
             img.append(im)
+            i+=1
         return img
+
 #function to stick frame on all side of canvas
-    def FrameWidth(self):
-        canvas.itemconfig(self.can_frame, width=canvas.winfo_width()-10)
+    def FrameWidth(self,l=0):
+        canvas.itemconfig(self.can_frame, width=canvas.winfo_width()-10-l)
+
 #function to change size of canvas wrt to btm frame
     def OnFrameConfigure(self, event):
         canvas.configure(scrollregion=canvas.bbox("all"))
-              
+
 #function to add event listener of mouse wheel on canvas to scroll canvas
     def _on_mousewheel(self, event):
         canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
+#function to make interface for adding product in wish list
+    def wsbutton(self,n):
+        return Button(self.btframe, text="+ Wishlist", font=("times new roman ", 8, "bold"), activebackground = "yellow", command = lambda:self.Add(n))
+
+#add images to wish list directory
+    def Add(self,n):
+        try:
+            if self.lis[n].get("name") not in self.name_lis or  self.name_lis == []:
+                lis_of_wish.append(self.lis[n])
+                self.name_lis.append(self.lis[n].get("name"))
+                #print(lis_of_wish)
+                src = str(n)+".jpg"
+                des = "wishlist"
+                sh.copy(src,des)
+                src = os.path.join("wishlist", str(n)+".jpg")
+                des = os.path.join("wishlist", str(self.lis[n].get("name"))+".jpg")
+                os.renames(src, des)
+        except:
+            print(" ")
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 
+                            #class wishlist = to display list of wishlist
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+
+class wishlist():
+    
+    def __init__(self):
+        fnt = ["Arial 10 bold", "Arial 13 bold", "Arial 10 "]
+        global canvas
+        canvas.pack_forget()
+        # ==========================================================================================#
+
+        third = Image.open("wishlist.jpg")
+        third = third.resize((990, 550), Image.ANTIALIAS)
+        # second= ImageEnhance.Sharpness(second)
+        # econd = second.enhance(7.0)
+        third = ImageTk.PhotoImage(third)
+        canvas = Canvas(parent, width=992, height=700, scrollregion=(0, 0, 1000, 1000), bg="#131d20")
+        canvas.image = third
+        canvas.create_image(0, 0, image=third, anchor="nw")
+        # making scrollbar
+        scroll = Scrollbar(parent, command=canvas.yview)
+        # adding it to canvas
+        canvas.config(yscrollcommand=scroll.set)
+        scroll.pack(fill="y",side=RIGHT)
+        self.wish = Frame(canvas)
+        canvas.pack(fill=BOTH, expand=True)
+
+        try:
+
+            # se=["#bab2de","#a0d0c4","#aca25a","#baacbc","#dad3d9","#a0d0c4"]
+
+            # -------------------------------------------------#
+            # for making object of % frames
+            l = []
+            lis = lis_of_wish
+            lis_of_link.clear()
+            for i in range(0, len(lis_of_wish)):
+                self.wla = Frame(self.wish, bg="#131d20")
+                l.append(self.wla)
+                lis_of_link.append(lis[i]["link"])
+                i += 1
+            # --------------------------------------------------#
+
+            # calling img function to show image of all product
+            img = self.mkimage(n=len(lis_of_wish))
+
+            # ==================================================================================#
+            for p in range(0, len(lis_of_wish)):
+                self.wlab = imagebutton(l[p], p)
+                self.wlab.image = img[p]  # this is anchor image object to label
+                self.wlab.config(image=img[p])
+                self.wlanam = Label(l[p], text=lis[p].get("name"), fg="white", wraplength=600, bg='#131d20',
+                                    font=fnt[0])
+                self.wlaprice = Label(l[p], text=lis[p].get("price"), fg="white", bg='#131d20', font=fnt[1])
+                self.wlaadd = Label(l[p], text=lis[p].get("address"), fg="white", bg='#131d20', font=fnt[2])
+                self.wbtframe = Frame(self.wish, bg='#131d20')
+                self.wvisit = mkButton(p, self.wbtframe)
+                self.wlab.grid(row=0, column=0, sticky="ns", rowspan=2)
+                self.wlanam.grid(row=0, column=1)
+                self.wlaprice.grid(row=1, column=1)
+                self.wlaadd.grid(row=1, column=2)
+                self.wvisit.pack(side=RIGHT, fill="x", padx=5, pady=3)
+                l[p].pack(side=TOP, fill="x", pady=1)
+                self.wbtframe.pack(fill="x")
+                p += 1
+                
+            # create a window
+            self.par_can = canvas.create_window(10, 50, anchor="nw", window=self.wish, tags="self.wish")
+        
+            # to set the size of canvas wrt btm frame
+            self.wish.bind("<Configure>", lambda event:canvas.configure(scrollregion=canvas.bbox("all")))
+            
+            #to adjust size of window on canvas
+            global t
+            t.bind("<Configure>",lambda event:canvas.itemconfig(self.par_can,width=canvas.winfo_width() - 10))
+            
+            # to make action listerner of mousewheel
+            t.bind("<MouseWheel>", lambda event:canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
+
+        except BaseException as e:
+            
+            if "NOT" not in lis:
+                lis = "ERROR"
+                print(e)
+                print(traceback.format_exc())
+            self.la = Label(self.wish, text=lis, font="Arial 22 bold")
+            self.la['background'] = '#856ff8'
+            self.la.pack(fill="x")
+            self.can_frame = canvas.create_window(10, 70, anchor="nw", window=self.wish)
+            # to make erroe maessafe same width as canvas
+            global t
+            t.bind("<Configure>",lambda event:canvas.itemconfig(self.par_can,width=canvas.winfo_width() - 10))
+
+    # making object of image
+    def mkimage(self, n):
+        img = []
+        for i in range(0,n):
+            add = os.path.join("wishlist", str(lis_of_wish[i].get("name"))+".jpg")
+            im = Image.open(add)
+            im = im.resize((70, 65), Image.ANTIALIAS)
+            im = ImageTk.PhotoImage(im)
+            img.append(im)
+            i += 1
+        return img
+    
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+
 t = Tk()
-parent=Frame(t)
-#image = Image.open(str(1)+".jpg")
+parent = Frame(t)
+
 # The (450, 350) is (height, width)
-#b= PhotoImage(file="resize.png")
-#img= Label(t,image=b)
 #resizing image by using PIL
 image = Image.open('new.jpg')
 image = image.resize((990,550), Image.ANTIALIAS)
-#image = image.resize((100, 69), Image.ANTIALIAS)
 bg = ImageTk.PhotoImage(image)
+
 # making canvas and adding image in back ground
 canvas = Canvas(parent, width=990, height=600,bg="black")
 canvas.pack(fill=BOTH, expand=True)
-canvas.image=bg  #-->ANCHOR TAG FOR IMAGE
+
+canvas.image=bg  
+#-->ANCHOR TAG FOR IMAGE
+
 canvas.create_image(0, 0, image=bg, anchor="nw")
+
 #creating text on background image
 canvas.create_text(300, 40, text="We help you to save money",fill="White",font="Times 20 bold")
 canvas.create_text(800, 75, text="SKARS", fill="black", font="Arial 25 bold")
+
 #calling making obj of header
 parent.pack(fill=BOTH)
 h = header(t)
-#voice()
-
 
 t.mainloop()
 
