@@ -3,9 +3,9 @@ import connection as con
 from PIL import Image,ImageTk
 from tkinter import messagebox as mbox
 
-
+rev_u =0
 def rev_u_window(lis,log_id,n):
-
+    global rev_u
     add = str(n)+'.jpg'
     state = con.check_rev_u(log_id,lis.get('name'))
     # making tkinter window
@@ -136,11 +136,14 @@ def rev_u_window(lis,log_id,n):
 
 
 def insert_in(log_id,lbox,text,pr_name,btn,rev_frame):
+    global rev_u
     if lbox.curselection()==():
         mbox.showinfo("Message", "Please select Number of Stars")
+        rev_u.deiconify()
         return
     elif text.compare("end-1c", "==", "1.0"):
         mbox.showinfo("Message", "Please Write review")
+        rev_u.deiconify()
         return
 
     #print(text.get('1.0',END))
@@ -170,6 +173,7 @@ def insert_in(log_id,lbox,text,pr_name,btn,rev_frame):
         btn.destroy()
         text.config(state="disabled")
 
+    rev_u.deiconify()
     return
 
 
