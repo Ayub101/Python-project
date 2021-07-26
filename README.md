@@ -7,28 +7,28 @@
   ## **Dependencies**
   
   ### install Python Pillow module
-  > `pip install Pillow`
+  > `- pip install Pillow`
   
   ### install Python Shutil module
-  > `pip install shutils`
+  > `- pip install shutils`
   
   ### install Python cv2 module
-  > `pip install opencv-python`
+  > `- pip install opencv-python`
   
   ### install Python mysql.connector module
-  > `pip install mysql-connector-python`
+  > `- pip install mysql-connector-python`
   
   ### install Python smtplib module
-  > `pip install secure-smtplib`
+  > `- pip install secure-smtplib`
   
   ### install Python speech_recognition module
-  > `pip install SpeechRecognition`
+  > `- pip install SpeechRecognition`
   
   ### install Python Request module
-  > `pip install requests`
+  > `- pip install requests`
   
-  # install Python bs4 module
-  > `pip install bs4`
+  ### install Python bs4 module
+  > `- pip install bs4`
   
   
 
